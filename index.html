@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudbeds Pricing & Packaging Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Host Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: white;
+            color: #1e293b;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 0;
+            box-shadow: none;
+            overflow: visible;
+        }
+
+        .header-section {
+            background: white;
+            border-bottom: none;
+            position: relative;
+        }
+
+        .header-bar {
+            padding: 24px 40px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            min-height: 60px;
+        }
+
+        .expand-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: #F2F2E9;
+            border: 1px solid #D9D9CC;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            color: #64748b;
+        }
+
+        .expand-button:hover {
+            background: #F8F8ED;
+            border-color: #94a3b8;
+            color: #0066cc;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .expand-button svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .expand-button.expanded svg {
+            transform: rotate(180deg);
+        }
+
+        .pricing-controls {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white;
+        }
+
+        .pricing-controls.expanded {
+            max-height: 200px;
+        }
+
+        .pricing-controls-inner {
+            padding: 0 40px 40px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        select, input {
+            padding: 14px 18px;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            font-family: 'Host Grotesk', sans-serif;
+            background: white;
+            min-width: 120px;
+            transition: border-color 0.2s ease;
+        }
+
+        input::placeholder {
+            color: #64748b;
+            font-weight: 400;
+            opacity: 1;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        .distribution-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+            color: #64748b;
+            margin-left: 20px;
+        }
+
+        .distribution-toggle input[type="checkbox"] {
+            min-width: auto;
+            width: 16px;
+            height: 16px;
+            padding: 0;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .distribution-toggle label {
+            cursor: pointer;
+            font-weight: 400;
+            user-select: none;
+        }
+
+        .packages-section {
+            padding: 50px 40px;
+            background: white;
+            position: relative;
+        }
+        
+        .bundles-section, .addons-section, .setup-section {
+            padding: 50px 40px;
+            background: transparent;
+        }
+
+        .addons-section, .setup-section {
+            background: transparent;
+            border-top: none;
+        }
+
+        .addons-section {
+            display: none;
+        }
+
+        .addons-section.show {
+            display: block;
+        }
+
+        .addons-toggle {
+            text-align: center;
+            padding-top: 30px;
+        }
+
+        .addons-toggle-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Host Grotesk', sans-serif;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .addons-toggle-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-1px);
+        }
+
+        .addons-toggle-btn .arrow {
+            margin-left: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .addons-toggle-btn.expanded .arrow {
+            transform: rotate(180deg);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 40px;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+        }
+
+        .bundles-section .section-title {
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 400;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .packages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .package-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .package-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border-color: #90d092;
+        }
+
+        .package-card.selected {
+            border-color: #90d092;
+            box-shadow: 0 8px 20px rgba(144, 208, 146, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .package-card.selected::before {
+            content: "✓ SELECTED";
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #90d092;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            z-index: 10;
+            letter-spacing: 0.5px;
+        }
+
+        .pricing-mode .package-card.selected::before {
+            display: block;
+        }
+
+        .presentation-mode .package-card.selected::before {
+            display: none;
+        }
+
+        .package-header {
+            padding: 40px 32px 24px;
+            color: #261c0a;
+            position: relative;
+        }
+        
+        .package-header.flex-header {
+            background: #F8F8ED;
+        }
+        
+        .package-header.one-header {
+            background: #F2F2E9;
+        }
+        
+        .package-header.experience-header {
+            background: #D9D9CC;
+        }
+
+        .package-name {
+            font-size: 2.4em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+            color: #261c0a;
+        }
+
+        .package-tagline {
+            font-size: 1.1em;
+            opacity: 0.8;
+            margin-bottom: 20px;
+            font-weight: 400;
+            color: #334155;
+        }
+
+        .package-price {
+            font-size: 2em;
+            font-weight: 700;
+            min-height: 1.2em;
+            color: #261c0a;
+        }
+
+        .distribution-banner {
+            padding: 16px 32px;
+            font-weight: 600;
+            font-size: 1em;
+            background: #64748b;
+            color: #261c0a;
+        }
+        
+        .distribution-banner.flex-distribution {
+            background: #F8F8ED;
+            color: #261c0a;
+            border-top: 1px solid #E8E8DD;
+        }
+        
+        .distribution-banner.one-distribution {
+            background: #F2F2E9;
+            color: #261c0a;
+            border-top: 1px solid #E2E2D9;
+        }
+        
+        .distribution-banner.experience-distribution {
+            background: #D9D9CC;
+            color: #261c0a;
+            border-top: 1px solid #C9C9BC;
+        }
+        
+        .info-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(38, 28, 10, 0.1);
+            color: #261c0a !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: 1px solid #261c0a;
+        }
+
+        .info-icon:hover {
+            background: rgba(38, 28, 10, 0.2);
+            color: #261c0a !important;
+        }
+        
+        .distribution-banner .info-icon {
+            color: #261c0a !important;
+        }
+
+        .package-features {
+            padding: 32px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-weight: 500;
+            font-size: 1.05em;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .feature-item:hover {
+            background-color: #f8fafc;
+            margin: 0 -32px;
+            padding-left: 32px;
+            padding-right: 32px;
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .feature-check {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            margin-right: 12px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        
+        .feature-check.yellow {
+            background: #FFF878;
+        }
+        
+        .feature-check.orange {
+            background: #FF9670;
+        }
+        
+        .feature-check.purple {
+            background: #C2A9F1;
+        }
+        
+        .feature-check.green {
+            background: #90D092;
+        }
+
+        .feature-arrow {
+            color: #64748b;
+            font-size: 1.2em;
+            transition: transform 0.2s ease;
+        }
+
+        .feature-item.expanded .feature-arrow {
+            transform: rotate(90deg);
+        }
+
+        .feature-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: #f8fafc;
+            margin: 0 -32px;
+        }
+
+        .feature-details.expanded {
+            max-height: 300px;
+        }
+
+        .feature-details-content {
+            padding: 16px 32px;
+            font-size: 0.95em;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .feature-details-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-details-list li {
+            padding: 4px 0;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .feature-details-list li::before {
+            content: "•";
+            color: #0066cc;
+            position: absolute;
+            left: 0;
+        }
+
+        .product-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .bundles-section .product-card {
+            background: rgba(255,255,255,0.95);
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .bundles-section .product-card:hover:not(.disabled):not(.required) {
+            background: white;
+            border-color: rgba(255,255,255,0.8);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+        }
+
+        .product-card:hover:not(.disabled):not(.required) {
+            border-color: #90d092;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .product-card.selected {
+            border-color: #90d092;
+            box-shadow: 0 8px 20px rgba(144, 208, 146, 0.15);
+            background: #f0fdf4;
+        }
+
+        .product-card.selected::before {
+            content: "✓";
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: #90d092;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .product-card.selected .product-header,
+        .product-card.required .product-header {
+            padding-right: 32px;
+        }
+
+        .product-card.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: #f1f5f9;
+        }
+
+        .product-card.disabled.bundle-disabled .product-name::after {
+            content: " (Included in Bundle)";
+            font-size: 0.8em;
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        .product-card.disabled.website-setup-disabled .product-description::before {
+            content: "Requires Website Platform. ";
+            font-size: 0.9em;
+            color: #ef4444;
+            font-weight: 500;
+            font-style: italic;
+        }
+
+        .product-card.disabled.gx-setup-disabled .product-description::before {
+            content: "Requires Experience Plan. ";
+            font-size: 0.9em;
+            color: #ef4444;
+            font-weight: 500;
+            font-style: italic;
+        }
+
+        .product-card.required {
+            border-color: #90d092;
+            background: #f5f9f0;
+            cursor: default;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .product-name {
+            font-size: 1.25em;
+            font-weight: 700;
+            color: #0f172a;
+            flex: 1;
+        }
+
+        .product-price {
+            text-align: right;
+            margin-left: 16px;
+        }
+
+        .product-price-main {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #0066cc;
+        }
+
+        .product-description {
+            color: #475569;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .bundle-features {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .bundle-feature-title {
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .bundle-feature-item {
+            display: flex;
+            align-items: center;
+            padding: 4px 0;
+            font-size: 0.9em;
+            color: #64748b;
+        }
+
+        .bundle-feature-check {
+            color: #90d092;
+            margin-right: 8px;
+            font-size: 0.8em;
+        }
+
+        .total-section {
+            background: #0f172a;
+            color: white;
+            padding: 32px 40px;
+            position: sticky;
+            bottom: 0;
+            z-index: 100;
+            display: none;
+        }
+
+        .total-section.show {
+            display: block;
+        }
+
+        .total-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 24px;
+        }
+
+        .selected-items {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .selected-items-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .selected-item {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            padding: 6px 14px;
+            border-radius: 20px;
+            margin: 3px;
+            font-size: 0.9em;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .total-price {
+            text-align: right;
+            min-width: 220px;
+        }
+
+        .total-monthly {
+            font-size: 2.4em;
+            font-weight: 700;
+            color: #90d092;
+            line-height: 1;
+        }
+
+        .total-setup {
+            font-size: 1.3em;
+            margin-top: 8px;
+            opacity: 0.8;
+            font-weight: 500;
+        }
+
+        @keyframes bundleGlow {
+            0% { box-shadow: 0 0 0 rgba(244, 224, 77, 0); }
+            50% { box-shadow: 0 0 30px rgba(244, 224, 77, 0.6); }
+            100% { box-shadow: 0 0 15px rgba(244, 224, 77, 0.3); }
+        }
+
+        @keyframes slideDown {
+            0% { transform: translateY(-100%); opacity: 0; }
+            70% { transform: translateY(5%); }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes priceTransform {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes checkRotateIn {
+            0% { transform: rotate(0deg) scale(0); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%); }
+            100% { transform: translateX(100%) translateY(100%); }
+        }
+
+        .bundle-banner {
+            background: #90d092;
+            color: white;
+            padding: 16px 24px;
+            margin: 0 0 24px 0;
+            font-weight: 600;
+            font-size: 1.05em;
+            display: none;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .bundle-banner.partial-bundle {
+            width: calc(66.66% - 6.66px) !important;
+            margin-right: auto !important;
+            margin-left: 0 !important;
+        }
+
+        .bundle-banner.partial-bundle-right {
+            width: calc(66.66% - 6.66px) !important;
+            margin-left: auto !important;
+            margin-right: 0 !important;
+        }
+
+        @media (max-width: 1100px) {
+            .bundle-banner.partial-bundle,
+            .bundle-banner.partial-bundle-right {
+                width: 100% !important;
+            }
+        }
+
+        .bundle-banner.revenue-marketing {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        }
+
+        .bundle-banner.revenue-intelligence {
+            background: linear-gradient(135deg, #f4e04d 0%, #e6c84f 100%);
+            color: #2d3436;
+        }
+
+        .bundle-banner.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            animation: slideDown 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .bundle-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            bottom: -50%;
+            left: -50%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        .bundle-banner-title {
+            font-size: 1.05em;
+            font-weight: 600;
+        }
+
+        .bundle-banner-subtitle {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #0066cc;
+            margin-top: 8px;
+        }
+
+        .revenue-product-card {
+            background: white;
+            border: 3px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 28px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .revenue-product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        }
+
+        .revenue-product-card.selected {
+            border-color: #90d092;
+        }
+
+        .revenue-product-card.bundle-active {
+            animation: bundleGlow 0.6s ease-out;
+            border-width: 4px;
+        }
+
+        .revenue-product-card.bundle-active.revenue-intelligence-bundle {
+            border-color: #f4e04d;
+            background: linear-gradient(135deg, #ffffff 0%, #fffef0 100%);
+        }
+
+        .revenue-product-card.bundle-active.revenue-marketing-bundle {
+            border-color: #ff9800;
+            background: linear-gradient(135deg, #ffffff 0%, #fff3e0 100%);
+        }
+
+        .bundle-check {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            color: white;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            background: #f4e04d;
+        }
+
+        .revenue-product-card.bundle-active.revenue-intelligence-bundle .bundle-check {
+            background: #f4e04d;
+            color: #2d3436;
+        }
+        
+        .revenue-product-card.bundle-active.revenue-marketing-bundle .bundle-check {
+            background: #ff9800;
+            color: white;
+        }
+
+        .revenue-product-card.bundle-active .bundle-check {
+            display: flex;
+            animation: checkRotateIn 0.5s ease-out;
+        }
+
+        .revenue-price-bundle {
+            font-weight: 700;
+            animation: priceTransform 0.6s ease-out;
+            color: #f4e04d;
+        }
+
+        .revenue-marketing-bundle .revenue-price-bundle {
+            color: #ff9800;
+        }
+
+        .revenue-price-original {
+            text-decoration: line-through;
+            opacity: 0.5;
+            font-size: 0.9em;
+            margin-right: 8px;
+            color: #64748b !important;
+        }
+
+        .revenue-products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .bundles-section {
+            background: linear-gradient(135deg, #261C0A 0%, #18317A 100%);
+            border-top: none;
+            color: white;
+            border-radius: 0;
+            margin: 0 -40px;
+            padding: 50px 80px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-close {
+            color: #64748b;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            top: 15px;
+            right: 20px;
+        }
+
+        .modal-close:hover {
+            color: #1e293b;
+        }
+
+        .modal-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #374151;
+            font-family: 'Host Grotesk', sans-serif;
+        }
+
+        .modal-link {
+            display: inline-flex;
+            align-items: center;
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1em;
+            transition: color 0.2s ease;
+        }
+
+        .modal-link:hover {
+            color: #004499;
+            text-decoration: underline;
+        }
+
+        .modal-link::before {
+            content: "→";
+            margin-right: 8px;
+        }
+
+        .presentation-mode .product-card.selected::before {
+            display: none;
+        }
+
+        .presentation-mode .setup-section {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .control-row {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .packages-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .total-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .packages-section, .bundles-section, .addons-section, .setup-section {
+                padding: 40px 30px;
+            }
+        }
+    </style>
+</head>
+<body class="presentation-mode">
+    <div class="container">
+        <div class="header-section">
+            <div class="header-bar">
+                <div></div>
+                <button class="expand-button" onclick="togglePricingMode()" id="expandBtn" title="Toggle pricing mode">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+            </div>
+            <div class="pricing-controls" id="pricingControls">
+                <div class="pricing-controls-inner">
+                    <div class="control-row">
+                        <div class="control-group">
+                            <span>I have a</span>
+                            <input type="number" id="rooms" min="1" max="1000" value="" placeholder="Rooms">
+                            <span>room business</span>
+                        </div>
+                        <div class="control-group">
+                            <span>in</span>
+                            <select id="country">
+                                <option value="">Select Country/Region</option>
+                                <optgroup label="NORAM">
+                                    <option value="United States">United States</option>
+                                    <option value="Canada">Canada</option>
+                                    <option value="REGION_NORAM">Other NORAM Region</option>
+                                </optgroup>
+                                <optgroup label="LATAM">
+                                    <option value="Mexico">Mexico</option>
+                                    <option value="Argentina">Argentina</option>
+                                    <option value="Brazil">Brazil</option>
+                                    <option value="Chile">Chile</option>
+                                    <option value="Colombia">Colombia</option>
+                                    <option value="Costa Rica">Costa Rica</option>
+                                    <option value="REGION_LATAM">Other LATAM Region</option>
+                                </optgroup>
+                                <optgroup label="APAC">
+                                    <option value="Australia">Australia</option>
+                                    <option value="Thailand">Thailand</option>
+                                    <option value="Philippines">Philippines</option>
+                                    <option value="Indonesia">Indonesia</option>
+                                    <option value="REGION_APAC">Other APAC Region</option>
+                                </optgroup>
+                                <optgroup label="EMEA">
+                                    <option value="United Kingdom">United Kingdom</option>
+                                    <option value="Germany">Germany</option>
+                                    <option value="France">France</option>
+                                    <option value="Spain">Spain</option>
+                                    <option value="Italy">Italy</option>
+                                    <option value="Portugal">Portugal</option>
+                                    <option value="Switzerland">Switzerland</option>
+                                    <option value="Ireland">Ireland</option>
+                                    <option value="REGION_EMEA">Other EMEA Region</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <span>priced in</span>
+                            <select id="currency">
+                                <option value="USD">USD ($)</option>
+                                <option value="ARS">ARS ($)</option>
+                                <option value="AUD">AUD (A$)</option>
+                                <option value="BRL">BRL (R$)</option>
+                                <option value="CAD">CAD (C$)</option>
+                                <option value="COP">COP ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="GBP">GBP (£)</option>
+                                <option value="IDR">IDR (Rp)</option>
+                                <option value="MXN">MXN ($)</option>
+                                <option value="THB">THB (฿)</option>
+                                <option value="MYR">MYR (RM)</option>
+                                <option value="ISK">ISK (kr)</option>
+                                <option value="JPY">JPY (¥)</option>
+                            </select>
+                        </div>
+                        <div class="distribution-toggle">
+                            <input type="checkbox" id="includeDistribution">
+                            <label for="includeDistribution">Include Distribution</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="packages-section">
+            <h2 class="section-title">Cloudbeds Pricing Plans</h2>
+            <div class="packages-grid" id="packagesGrid"></div>
+        </div>
+
+        <div class="bundles-section">
+            <h2 class="section-title">Revenue Marketing</h2>
+            <div class="section-subtitle">Powered by Cloudbeds Signals</div>
+            <div id="bundlesGrid"></div>
+            
+            <div class="addons-toggle">
+                <button class="addons-toggle-btn" onclick="toggleAddons()" id="addonsToggleBtn">
+                    Show individual add-on products
+                    <span class="arrow">↓</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="addons-section" id="addonsSection">
+            <h2 class="section-title">Add-on Products</h2>
+            <div class="products-grid" id="addonsGrid"></div>
+        </div>
+
+        <div class="setup-section" id="setupSection">
+            <h2 class="section-title">Setup Costs</h2>
+            <div class="products-grid" id="setupGrid"></div>
+        </div>
+    </div>
+
+    <div class="total-section" id="totalSection">
+        <div class="total-content">
+            <div class="selected-items">
+                <div class="selected-items-title">Selected Items:</div>
+                <div id="selectedItemsList">No items selected</div>
+            </div>
+            <div class="total-price">
+                <div class="total-monthly" id="totalMonthly">$0/mo</div>
+                <div class="total-setup" id="totalSetup">Setup: $0</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <div class="modal-text" id="modalText"></div>
+            <a href="#" id="modalLink" class="modal-link" target="_blank"></a>
+        </div>
+    </div>
+
+    <script>
+        const BUNDLES_ENABLED = false;
+        const EXISTING_CUSTOMERS = false;
+
+        const packageFeatures = {
+            flex: {
+                'PMS': ['Easy intuitive dashboard & calendar', 'Simplified rate & package management', 'Centralized reporting & dashboards', 'Integrated groups management'],
+                'Payments': ['Global credit card security compliance', 'Automated payment processing', 'Chargeback and dispute management', 'Digital wallets, pay-by-link, and more'],
+                'Marketplace & API': ['Exclusive integration enhancements', 'Frictionless app setup', 'POS, Accounting, Door locks, & more', 'Unlimited app integrations']
+            },
+            one: {
+                'Everything in Flex': ['PMS', 'Integrated Payments', 'Marketplace & API'],
+                'Booking Engine': ['Mobile and conversion-optimized', 'Website-embedded booking engine', 'Tailored packages and upsells', 'Integrated payments with digital wallets'],
+                'Channel Manager': ['Unlimited, direct connect to 300+ channels', 'Real-time, one-click rate changes', 'Express connect setup', 'Expedia Elite status']
+            },
+            experience: {
+                'Everything in One': ['PMS', 'Payments', 'Distribution', 'Marketplace & API'],
+                'Guest Experience': ['AI-Powered Chatbot', 'Unified Inbox', 'Guest Portal', 'Digital Check-in', 'Kiosk', 'Tickets & Tasks'],
+                'Reputation Management': ['In-stay surveys & TripAdvisor integration', 'Multi-channel review management', 'Unhappy guest detection & escalations', 'AI-assisted replies']
+            }
+        };
+
+        const packages = {
+            flex: { perRoom: 9, minimum: 180, minRooms: 20, name: "Flex", tagline: "Build your own tech stack" },
+            one: { perRoom: 11, minimum: 220, minRooms: 20, name: "One", tagline: "The original unified platform" },
+            experienceGlobal: { perRoom: 15, minimum: 300, minRooms: 20, name: "Experience", tagline: "Unify your guest experience" },
+            experienceUS: { perRoom: 16, minimum: 320, minRooms: 20, name: "Experience", tagline: "Unify your guest experience" }
+        };
+
+        const revenueProducts = {
+            revenueIntelligence: { perRoom: 8, minimum: 240, minRooms: 20, name: "Revenue Intelligence", description: "Advanced revenue management powered by Cloudbeds Signals causal AI.", includesAnalytics: true, features: ['Causal AI pricing engine', 'Real-time demand forecasting', 'Competitor rate monitoring', 'Portfolio management dashboards'] },
+            guestMarketing: { perRoom: 5, minimum: 150, minRooms: 20, name: "Guest Marketing CRM", description: "Turn PMS guest data into revenue with personalized campaigns.", features: ['Seamless PMS integration', 'AI-powered campaign creation', 'Smart guest segmentation', 'Automated email workflows'] },
+            digitalMarketingSuite: { perRoom: 6, minimum: 120, minRooms: 20, name: "Digital Marketing", description: "Capture more direct bookings with a dynamic, full-funnel, AI-driven marketing strategy.", includes: ['Metasearch', 'Retargeting', 'Hotel Pmax', 'Reputation'] }
+        };
+
+        const bundleConfigs = {
+            revenueIntelligenceBundle: { perRoom: 11, minimum: 330, minRooms: 20, name: "Revenue Intelligence Bundle", requiredProducts: ['revenueIntelligence', 'guestMarketing'], savings: 2 },
+            marketingBundle: { perRoom: 9, minimum: 270, minRooms: 20, name: "Marketing Bundle", requiredProducts: ['guestMarketing', 'digitalMarketingSuite'], savings: 2 },
+            revenueMarketingBundle: { perRoom: 14, minimum: 450, minRooms: 20, name: "Revenue Marketing Bundle", requiredProducts: ['revenueIntelligence', 'guestMarketing', 'digitalMarketingSuite'], savings: 5 }
+        };
+
+        const addons = {
+            revenueAnalytics: { perRoom: 4, minimum: 120, minRooms: 20, name: "Revenue Analytics", description: "In-depth analytics and reporting for revenue insights.", includedIn: 'revenueIntelligence' },
+            metasearch: { perRoom: 2, minimum: 40, minRooms: 20, name: "Metasearch", description: "Optimize visibility on metasearch engines like Google.", includedIn: 'digitalMarketingSuite' },
+            retargeting: { perRoom: 2, minimum: 40, minRooms: 20, name: "Retargeting", description: "Re-engage potential guests who visited your website.", includedIn: 'digitalMarketingSuite' },
+            hotelPmax: { perRoom: 2, minimum: 40, minRooms: 20, name: "Hotel Pmax", description: "Performance Max campaigns for maximum reach and bookings.", includedIn: 'digitalMarketingSuite' },
+            reputation: { perRoom: 2, minimum: 40, minRooms: 20, name: "Reputation", description: "Monitor and manage your online reputation across platforms.", includedIn: 'digitalMarketingSuite' },
+            websitePlatform: { perRoom: 0, minimum: 79, minRooms: 0, name: "Website Platform", description: "Conversion-optimized website powered by hospitality expertise and AI to drive direct bookings.", isFlatFee: true }
+        };
+
+        const setupCosts = {
+            onboarding: { perRoom: 10, minimum: 200, minRooms: 20, name: "Onboarding", description: "Complete setup and training for your property." },
+            reservationImport: { perRoom: 10, minimum: 200, minRooms: 20, name: "Reservation Import", description: "Import existing reservations and guest data." },
+            websiteSetup: { perRoom: 0, minimum: 500, minRooms: 0, name: "Website Setup", description: "Professional website setup and configuration.", isFlatFee: true },
+            guestExperienceSetup: { perRoom: 0, minimum: 200, minRooms: 0, name: "Experience Setup", description: "Professional Guest Experience setup and configuration.", isFlatFee: true }
+        };
+
+        const currencyMultipliers = { USD: 1, ARS: 1450.3754, AUD: 1.499757, BRL: 5.515699, CAD: 1.372294, COP: 3769.585006, EUR: 0.85116, GBP: 0.742289, IDR: 16675.0063, ISK: 125.3, JPY: 156.753, MXN: 18.017956, MYR: 4.058, THB: 31.445107 };
+
+        const regionalMultipliers = { "Spain": 0.90, "United Kingdom": 0.95, "Canada": 1.0, "Mexico": 0.95, "Thailand": 0.65, "Argentina": 0.85, "Australia": 0.90, "Chile": 0.80, "France": 1.0, "Germany": 1.0, "Ireland": 1.0, "Italy": 1.0, "Philippines": 0.55, "Portugal": 0.90, "Switzerland": 1.3, "Brazil": 0.80, "Colombia": 0.80, "Costa Rica": 0.80, "Indonesia": 0.55, "United States": 1.0, "REGION_NORAM": 0.9, "REGION_LATAM": 0.8, "REGION_EMEA": 0.9, "REGION_APAC": 0.8 };
+
+        const countryCurrency = { "United States": "USD", "Canada": "CAD", "Mexico": "MXN", "Argentina": "ARS", "Brazil": "BRL", "Chile": "USD", "Colombia": "COP", "Costa Rica": "USD", "United Kingdom": "GBP", "Germany": "EUR", "France": "EUR", "Spain": "EUR", "Italy": "EUR", "Portugal": "EUR", "Switzerland": "EUR", "Ireland": "EUR", "Australia": "AUD", "Thailand": "THB", "Philippines": "USD", "Indonesia": "IDR", "REGION_APAC": "USD", "REGION_EMEA": "USD", "REGION_LATAM": "USD", "REGION_NORAM": "USD" };
+
+        const currencySymbols = { USD: "$", ARS: "$", AUD: "A$", BRL: "R$", CAD: "C$", COP: "$", EUR: "€", GBP: "£", IDR: "Rp", ISK: "kr", JPY: "¥", MXN: "$", MYR: "RM", THB: "฿" };
+
+        let isPricingMode = false;
+        let selectedItems = { corePackage: null, revenueProducts: new Set(), addons: new Set(), setup: new Set(['onboarding']), detectedBundle: null };
+
+        function detectActiveBundle() {
+            if (!BUNDLES_ENABLED) return null;
+            const selected = Array.from(selectedItems.revenueProducts);
+            if (selected.includes('revenueIntelligence') && selected.includes('guestMarketing')) return 'revenueIntelligenceBundle';
+            return null;
+        }
+
+        function calculatePrice(basePerRoom, baseMinimum, minRooms, rooms, currency, returnBoth = false, showPerRoomAtMin = false, country = null, isWebsitePlatform = false, isFlatFee = false) {
+            const currencyMultiplier = currencyMultipliers[currency] || 1;
+            const symbol = currencySymbols[currency] || "$";
+            let regionalMultiplier = country && regionalMultipliers[country] ? regionalMultipliers[country] : 1;
+            let totalPrice, perRoomActual, displayPerRoom;
+
+            if (isFlatFee) {
+                totalPrice = baseMinimum * regionalMultiplier * currencyMultiplier;
+                perRoomActual = null;
+                displayPerRoom = null;
+            } else {
+                const adjustedPerRoom = basePerRoom * regionalMultiplier * currencyMultiplier;
+                const adjustedMinimum = baseMinimum * regionalMultiplier * currencyMultiplier;
+                
+                if (rooms > 0 && rooms < minRooms) {
+                    totalPrice = adjustedMinimum;
+                    perRoomActual = null;
+                    displayPerRoom = null;
+                } else if (rooms >= minRooms) {
+                    totalPrice = adjustedPerRoom * rooms;
+                    perRoomActual = adjustedPerRoom;
+                    displayPerRoom = showPerRoomAtMin ? adjustedPerRoom : null;
+                } else {
+                    totalPrice = adjustedMinimum;
+                    perRoomActual = null;
+                    displayPerRoom = null;
+                }
+            }
+
+            const fmt = (v) => v.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+            let formattedTotal = fmt(totalPrice);
+            let formattedPerRoom = perRoomActual ? fmt(perRoomActual) : null;
+            let formattedDisplayPerRoom = displayPerRoom ? fmt(displayPerRoom) : null;
+
+            if (returnBoth) {
+                return { total: `${symbol}${formattedTotal}/mo`, perRoom: formattedPerRoom ? `${symbol}${formattedPerRoom}/room` : null, displayPerRoom: formattedDisplayPerRoom ? `${symbol}${formattedDisplayPerRoom}/room` : null, totalOneTime: `${symbol}${formattedTotal}`, perRoomOneTime: formattedPerRoom ? `${symbol}${formattedPerRoom}/room` : null, displayPerRoomOneTime: formattedDisplayPerRoom ? `${symbol}${formattedDisplayPerRoom}/room` : null, numericTotal: totalPrice, numericPerRoom: perRoomActual, numericDisplayPerRoom: displayPerRoom };
+            }
+            return `${symbol}${formattedTotal}/mo`;
+        }
+
+        function togglePricingMode() {
+            const body = document.body, controls = document.getElementById('pricingControls'), expandBtn = document.getElementById('expandBtn'), totalSection = document.getElementById('totalSection'), setupSection = document.getElementById('setupSection');
+            isPricingMode = !isPricingMode;
+            if (isPricingMode) {
+                body.classList.remove('presentation-mode'); body.classList.add('pricing-mode'); controls.classList.add('expanded'); expandBtn.classList.add('expanded');
+                const rooms = parseInt(document.getElementById('rooms').value) || 0, country = document.getElementById('country').value;
+                if (rooms > 0 && country) { totalSection.classList.add('show'); setupSection.style.display = 'block'; }
+            } else {
+                body.classList.add('presentation-mode'); body.classList.remove('pricing-mode'); controls.classList.remove('expanded'); expandBtn.classList.remove('expanded'); totalSection.classList.remove('show'); setupSection.style.display = 'none';
+            }
+            updateDisplay();
+        }
+
+        function generateRevenueProductCard(key, productData) {
+            const rooms = parseInt(document.getElementById('rooms').value) || 0, currency = document.getElementById('currency').value || 'USD', country = document.getElementById('country').value;
+            const showPricing = isPricingMode && rooms > 0 && country, isSelected = selectedItems.revenueProducts.has(key), activeBundle = detectActiveBundle(), isBundled = BUNDLES_ENABLED && activeBundle && isSelected;
+            let bundleClass = isBundled ? (activeBundle === 'revenueMarketingBundle' ? 'revenue-marketing-bundle' : 'revenue-intelligence-bundle') : '';
+            let pricingHTML = '';
+            if (showPricing) {
+                const individualPrice = calculatePrice(productData.perRoom, productData.minimum, productData.minRooms, rooms, currency, true, true, country);
+                if (isBundled) {
+                    const displayPrice = (rooms >= productData.minRooms && individualPrice.displayPerRoom) ? individualPrice.displayPerRoom : individualPrice.total;
+                    pricingHTML = `<div class="product-price"><span class="revenue-price-original">${displayPrice}</span><div class="revenue-price-bundle">Bundled</div></div>`;
+                } else {
+                    const displayPrice = (rooms >= productData.minRooms && individualPrice.displayPerRoom) ? individualPrice.displayPerRoom : individualPrice.total;
+                    pricingHTML = `<div class="product-price-main">${displayPrice}</div>`;
+                }
+            } else { pricingHTML = `<div class="product-price-main"></div>`; }
+            let featuresHTML = '';
+            if (productData.features) { featuresHTML = `<div class="bundle-features">${productData.features.map(item => `<div class="bundle-feature-item"><span class="bundle-feature-check">✓</span>${item}</div>`).join('')}</div>`; }
+            else if (productData.includes) { featuresHTML = `<div class="bundle-features">${productData.includes.map(item => `<div class="bundle-feature-item"><span class="bundle-feature-check">✓</span>${item}</div>`).join('')}</div>`; }
+            return `<div class="revenue-product-card ${isSelected ? 'selected' : ''} ${isBundled ? 'bundle-active' : ''} ${bundleClass}" onclick="selectRevenueProduct('${key}')"><div class="bundle-check">✓</div><div class="product-header"><div class="product-name">${productData.name}</div><div class="product-price">${pricingHTML}</div></div><div class="product-description">${productData.description}</div>${featuresHTML}</div>`;
+        }
+
+        function selectRevenueProduct(key) {
+            if (selectedItems.revenueProducts.has(key)) {
+                selectedItems.revenueProducts.delete(key);
+            } else {
+                selectedItems.revenueProducts.add(key);
+                if (key === 'revenueIntelligence') {
+                    selectedItems.setup.add('reservationImport');
+                }
+            }
+            selectedItems.detectedBundle = detectActiveBundle();
+            const bundleBanner = document.getElementById('bundleBanner');
+            if (selectedItems.detectedBundle && bundleBanner) { bundleBanner.classList.remove('active'); setTimeout(() => bundleBanner.classList.add('active'), 50); }
+            updateDisplay();
+        }
+
+        function showInfoModal(planType) {
+            const modal = document.getElementById('infoModal'), modalText = document.getElementById('modalText'), modalLink = document.getElementById('modalLink');
+            let text, linkText, linkUrl;
+            switch(planType) {
+                case 'flex': text = "Use your preferred CRS or channel manager partner."; linkText = "See our channel partners"; linkUrl = "https://www.cloudbeds.com/channels/"; break;
+                case 'one': text = "Plan includes our integrated channel manager and booking engine."; linkText = "See our channel partners"; linkUrl = "https://www.cloudbeds.com/channels/"; break;
+                case 'experience': text = "Work with one of our preferred distribution partners, or use our fully integrated channel manager and booking engine."; linkText = "See our distribution partners"; linkUrl = "https://www.cloudbeds.com/integrations/?cat=distribution"; break;
+            }
+            modalText.textContent = text; modalLink.textContent = linkText; modalLink.href = linkUrl; modal.style.display = 'block';
+        }
+
+        function closeModal() { document.getElementById('infoModal').style.display = 'none'; }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('infoModal'), closeBtn = document.querySelector('.modal-close');
+            closeBtn.onclick = closeModal;
+            window.onclick = function(event) { if (event.target === modal) closeModal(); }
+        });
+
+        function toggleAddons() {
+            const section = document.getElementById('addonsSection'), btn = document.getElementById('addonsToggleBtn');
+            if (section.classList.contains('show')) { section.classList.remove('show'); btn.innerHTML = 'Show individual add-on products <span class="arrow">↓</span>'; btn.classList.remove('expanded'); }
+            else { section.classList.add('show'); btn.innerHTML = 'Hide individual add-on products <span class="arrow">↓</span>'; btn.classList.add('expanded'); }
+        }
+
+        function toggleFeatureDropdown(featureName, packageType, event) {
+            event.stopPropagation();
+            const featureItem = document.querySelector(`[data-feature="${featureName}"][data-package="${packageType}"]`), details = featureItem.nextElementSibling;
+            featureItem.classList.toggle('expanded'); details.classList.toggle('expanded');
+        }
+
+        function generatePackageCard(key, packageData) {
+            const rooms = parseInt(document.getElementById('rooms').value) || 0, currency = document.getElementById('currency').value || 'USD', country = document.getElementById('country').value;
+            const showPricing = isPricingMode && rooms > 0 && country;
+            let pricingHTML = '';
+            if (showPricing) {
+                const pricing = calculatePrice(packageData.perRoom, packageData.minimum, packageData.minRooms, rooms, currency, true, true, country);
+                pricingHTML = rooms >= packageData.minRooms && pricing.displayPerRoom ? `<div class="package-price">${pricing.displayPerRoom}</div>` : `<div class="package-price">${pricing.total}</div>`;
+            } else { pricingHTML = `<div class="package-price"></div>`; }
+            const packageFeatureKey = key.includes('experience') ? 'experience' : key, features = packageFeatures[packageFeatureKey];
+            let planType, distributionClass = '', headerClass = '';
+            if (key.includes('flex')) { planType = 'flex'; distributionClass = 'flex-distribution'; headerClass = 'flex-header'; }
+            else if (key.includes('one')) { planType = 'one'; distributionClass = 'one-distribution'; headerClass = 'one-header'; }
+            else { planType = 'experience'; distributionClass = 'experience-distribution'; headerClass = 'experience-header'; }
+            function getColorClass(featureName) {
+                if (['PMS', 'Payments', 'Marketplace & API', 'Everything in Flex'].includes(featureName)) return 'yellow';
+                if (['Channel Manager', 'Booking Engine'].includes(featureName)) return 'orange';
+                if (['Guest Experience', 'Everything in One'].includes(featureName)) return 'purple';
+                if (featureName === 'Reputation Management') return 'green';
+                return 'yellow';
+            }
+            let featuresHTML = '';
+            Object.entries(features).forEach(([featureName, featureDetails]) => {
+                const colorClass = getColorClass(featureName);
+                featuresHTML += `<div class="feature-item" data-feature="${featureName}" data-package="${key}" onclick="toggleFeatureDropdown('${featureName}', '${key}', event)"><div style="display: flex; align-items: center;"><span class="feature-check ${colorClass}"></span>${featureName}</div><span class="feature-arrow">></span></div><div class="feature-details"><div class="feature-details-content"><ul class="feature-details-list">${featureDetails.map(detail => `<li>${detail}</li>`).join('')}</ul></div></div>`;
+            });
+            const isSelected = isPricingMode && selectedItems.corePackage === key;
+            return `<div class="package-card ${isSelected ? 'selected' : ''}" onclick="${isPricingMode ? `selectPackage('${key}')` : ''}"><div class="package-header ${headerClass}"><div class="package-name">${packageData.name}</div><div class="package-tagline">${packageData.tagline}</div>${pricingHTML}</div><div class="distribution-banner ${distributionClass}">${key.includes('flex') ? 'Bring your own distribution' : key.includes('one') ? 'Cloudbeds Distribution included' : 'Cloudbeds Distribution optional'}</div><div class="package-features">${featuresHTML}</div></div>`;
+        }
+
+        function generateProductCard(key, productData, type) {
+            const rooms = parseInt(document.getElementById('rooms').value) || 0, currency = document.getElementById('currency').value || 'USD', country = document.getElementById('country').value;
+            const showPricing = isPricingMode && rooms > 0 && country, isSelected = selectedItems[type].has(key);
+            const isRequired = (type === 'setup' && key === 'onboarding') || (type === 'setup' && key === 'websiteSetup' && selectedItems.addons.has('websitePlatform')) || (type === 'setup' && key === 'guestExperienceSetup' && selectedItems.corePackage && selectedItems.corePackage.includes('experience')) || (type === 'setup' && key === 'reservationImport' && selectedItems.revenueProducts.has('revenueIntelligence'));
+            let isDisabled = false, isBundleDisabled = false;
+            if (type === 'setup' && key === 'websiteSetup' && !selectedItems.addons.has('websitePlatform')) isDisabled = true;
+            if (type === 'setup' && key === 'guestExperienceSetup' && (!selectedItems.corePackage || !selectedItems.corePackage.includes('experience'))) isDisabled = true;
+            if (type === 'addons' && productData.includedIn) {
+                if (productData.includedIn === 'revenueIntelligence' && selectedItems.revenueProducts.has('revenueIntelligence')) { isDisabled = true; isBundleDisabled = true; }
+                else if (productData.includedIn === 'digitalMarketingSuite' && selectedItems.revenueProducts.has('digitalMarketingSuite')) { isDisabled = true; isBundleDisabled = true; }
+            }
+            let pricingHTML = '';
+            if (showPricing) {
+                const isFlatFee = productData.isFlatFee || false;
+                const pricing = calculatePrice(productData.perRoom, productData.minimum, productData.minRooms, rooms, currency, true, true, country, false, isFlatFee);
+                if (type === 'setup') { pricingHTML = `<div class="product-price-main">${pricing.totalOneTime}</div>`; }
+                else { pricingHTML = (!isFlatFee && rooms >= productData.minRooms && pricing.displayPerRoom) ? `<div class="product-price-main">${pricing.displayPerRoom}</div>` : `<div class="product-price-main">${pricing.total}</div>`; }
+            } else { pricingHTML = `<div class="product-price-main"></div>`; }
+            const isWebsiteSetupDisabled = type === 'setup' && key === 'websiteSetup' && !selectedItems.addons.has('websitePlatform');
+            const isGxSetupDisabled = type === 'setup' && key === 'guestExperienceSetup' && (!selectedItems.corePackage || !selectedItems.corePackage.includes('experience'));
+            const cardClasses = isPricingMode ? `${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''} ${isBundleDisabled ? 'bundle-disabled' : ''} ${isWebsiteSetupDisabled ? 'website-setup-disabled' : ''} ${isGxSetupDisabled ? 'gx-setup-disabled' : ''} ${isRequired ? 'required' : ''}` : '';
+            const clickHandler = isPricingMode ? `onclick="selectProduct('${key}', '${type}')"` : '';
+            return `<div class="product-card ${cardClasses}" ${clickHandler}><div class="product-header"><div class="product-name">${productData.name}</div><div class="product-price">${pricingHTML}</div></div><div class="product-description">${productData.description}</div></div>`;
+        }
+
+        function selectPackage(key) { 
+            if (!isPricingMode) return; 
+            if (selectedItems.corePackage === key) {
+                selectedItems.corePackage = null;
+                selectedItems.setup.delete('guestExperienceSetup');
+            } else {
+                selectedItems.corePackage = key;
+                if (key.includes('experience')) {
+                    selectedItems.setup.add('guestExperienceSetup');
+                } else {
+                    selectedItems.setup.delete('guestExperienceSetup');
+                }
+            }
+            updateDisplay(); 
+        }
+
+        function selectProduct(key, type) {
+            if (!isPricingMode) return;
+            if (type === 'setup' && key === 'onboarding') return;
+            if (type === 'setup' && key === 'websiteSetup' && !selectedItems.addons.has('websitePlatform')) return;
+            if (type === 'setup' && key === 'websiteSetup' && selectedItems.addons.has('websitePlatform')) return;
+            if (type === 'setup' && key === 'guestExperienceSetup' && (!selectedItems.corePackage || !selectedItems.corePackage.includes('experience'))) return;
+            if (type === 'setup' && key === 'guestExperienceSetup' && selectedItems.corePackage && selectedItems.corePackage.includes('experience')) return;
+            if (type === 'setup' && key === 'reservationImport' && selectedItems.revenueProducts.has('revenueIntelligence')) return;
+            const productData = (type === 'addons' ? addons : setupCosts)[key];
+            if (selectedItems[type].has(key)) { selectedItems[type].delete(key); if (type === 'addons' && key === 'websitePlatform') selectedItems.setup.delete('websiteSetup'); }
+            else { selectedItems[type].add(key); if (type === 'addons' && key === 'websitePlatform') selectedItems.setup.add('websiteSetup'); }
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const rooms = parseInt(document.getElementById('rooms').value) || 0, currency = document.getElementById('currency').value || 'USD', country = document.getElementById('country').value, includeDistribution = document.getElementById('includeDistribution').checked;
+            if (rooms > 0 && rooms < 20 && selectedItems.revenueProducts.has('revenueIntelligence')) { selectedItems.revenueProducts.delete('revenueIntelligence'); selectedItems.detectedBundle = detectActiveBundle(); }
+            if (rooms > 0 && rooms < 20 && selectedItems.addons.has('revenueAnalytics')) selectedItems.addons.delete('revenueAnalytics');
+            if (!EXISTING_CUSTOMERS) ['metasearch', 'retargeting', 'hotelPmax', 'reputation'].forEach(addon => { if (selectedItems.addons.has(addon)) selectedItems.addons.delete(addon); });
+            const totalSection = document.getElementById('totalSection'), setupSection = document.getElementById('setupSection');
+            if (isPricingMode && rooms > 0 && country) { totalSection.classList.add('show'); setupSection.style.display = 'block'; }
+            else { totalSection.classList.remove('show'); setupSection.style.display = 'none'; }
+            const isUSCanada = country === "United States" || country === "Canada", experienceKey = isUSCanada ? 'experienceUS' : 'experienceGlobal';
+            let packagesHTML = includeDistribution ? generatePackageCard('one', packages.one) + generatePackageCard(experienceKey, packages[experienceKey]) : generatePackageCard('flex', packages.flex) + generatePackageCard('one', packages.one) + generatePackageCard(experienceKey, packages[experienceKey]);
+            document.getElementById('packagesGrid').innerHTML = packagesHTML;
+            const activeBundle = detectActiveBundle();
+            let bundleBannerHTML = '';
+            if (BUNDLES_ENABLED && activeBundle) {
+                const bundleConfig = bundleConfigs[activeBundle];
+                let bundleSubtitleHTML = '';
+                if (isPricingMode && rooms > 0 && country) {
+                    const bundlePricing = calculatePrice(bundleConfig.perRoom, bundleConfig.minimum, bundleConfig.minRooms, rooms, currency, true, true, country);
+                    const bundlePrice = rooms >= bundleConfig.minRooms && bundlePricing.displayPerRoom ? bundlePricing.displayPerRoom : bundlePricing.total;
+                    const symbol = currencySymbols[currency] || "$", currencyMult = currencyMultipliers[currency] || 1;
+                    let regionalMult = country && regionalMultipliers[country] ? regionalMultipliers[country] : 1;
+                    const adjustedSavings = Math.round(bundleConfig.savings * regionalMult * currencyMult);
+                    const isPerRoom = rooms >= bundleConfig.minRooms;
+                    const savingsText = isPerRoom ? `Save ${symbol}${adjustedSavings}/room` : `Save ${symbol}${Math.round(adjustedSavings * bundleConfig.minRooms)} total`;
+                    bundleSubtitleHTML = `<div class="bundle-banner-subtitle">${bundlePrice} — ${savingsText}</div>`;
+                }
+                if (activeBundle === 'revenueMarketingBundle') bundleBannerHTML = `<div class="bundle-banner revenue-marketing active" id="bundleBanner"><div class="bundle-banner-title">REVENUE MARKETING BUNDLE</div>${bundleSubtitleHTML}</div>`;
+                else if (activeBundle === 'revenueIntelligenceBundle') bundleBannerHTML = `<div class="bundle-banner revenue-intelligence partial-bundle active" id="bundleBanner"><div class="bundle-banner-title">REVENUE INTELLIGENCE BUNDLE</div>${bundleSubtitleHTML}</div>`;
+                else if (activeBundle === 'marketingBundle') bundleBannerHTML = `<div class="bundle-banner revenue-intelligence partial-bundle-right active" id="bundleBanner"><div class="bundle-banner-title">MARKETING BUNDLE</div>${bundleSubtitleHTML}</div>`;
+            } else bundleBannerHTML = '<div class="bundle-banner" id="bundleBanner"></div>';
+            const filteredRevenueProducts = Object.entries(revenueProducts).filter(([key, data]) => !(key === 'revenueIntelligence' && rooms > 0 && rooms < 20));
+            const revenueProductsHTML = filteredRevenueProducts.map(([key, data]) => generateRevenueProductCard(key, data)).join('');
+            document.getElementById('bundlesGrid').innerHTML = bundleBannerHTML + '<div class="revenue-products-grid">' + revenueProductsHTML + '</div>';
+            let filteredAddons = { ...addons };
+            if (rooms > 0 && rooms < 20) delete filteredAddons.revenueAnalytics;
+            if (selectedItems.revenueProducts.has('revenueIntelligence')) delete filteredAddons.revenueAnalytics;
+            if (!EXISTING_CUSTOMERS) { delete filteredAddons.metasearch; delete filteredAddons.retargeting; delete filteredAddons.hotelPmax; delete filteredAddons.reputation; }
+            else if (selectedItems.revenueProducts.has('digitalMarketingSuite')) { delete filteredAddons.metasearch; delete filteredAddons.retargeting; delete filteredAddons.hotelPmax; delete filteredAddons.reputation; }
+            document.getElementById('addonsGrid').innerHTML = Object.entries(filteredAddons).map(([key, data]) => generateProductCard(key, data, 'addons')).join('');
+            document.getElementById('setupGrid').innerHTML = Object.entries(setupCosts).map(([key, data]) => generateProductCard(key, data, 'setup')).join('');
+            updateTotals();
+        }
+
+        function updateTotals() {
+            const rooms = parseInt(document.getElementById('rooms').value) || 0, currency = document.getElementById('currency').value || 'USD', country = document.getElementById('country').value;
+            const showPricing = isPricingMode && rooms > 0 && country;
+            if (!showPricing) { document.getElementById('totalMonthly').textContent = '$0/mo'; document.getElementById('totalSetup').textContent = 'Setup: $0'; document.getElementById('selectedItemsList').innerHTML = 'No items selected'; return; }
+            let totalMonthly = 0, totalSetup = 0, selectedItemsText = [];
+            if (selectedItems.corePackage) {
+                const isUSCanada = country === "United States" || country === "Canada", experienceKey = isUSCanada ? 'experienceUS' : 'experienceGlobal';
+                const packageKey = selectedItems.corePackage.includes('experience') ? experienceKey : selectedItems.corePackage, packageData = packages[packageKey];
+                if (packageData) { const pricing = calculatePrice(packageData.perRoom, packageData.minimum, packageData.minRooms, rooms, currency, true, false, country); totalMonthly += pricing.numericTotal; selectedItemsText.push(packageData.name); }
+            }
+            const activeBundle = detectActiveBundle();
+            if (BUNDLES_ENABLED && activeBundle) { const bundleConfig = bundleConfigs[activeBundle], pricing = calculatePrice(bundleConfig.perRoom, bundleConfig.minimum, bundleConfig.minRooms, rooms, currency, true, false, country); totalMonthly += pricing.numericTotal; selectedItemsText.push(bundleConfig.name); }
+            else { selectedItems.revenueProducts.forEach(key => { const productData = revenueProducts[key]; if (productData) { const pricing = calculatePrice(productData.perRoom, productData.minimum, productData.minRooms, rooms, currency, true, false, country); totalMonthly += pricing.numericTotal; selectedItemsText.push(productData.name); } }); }
+            selectedItems.addons.forEach(key => { const addonData = addons[key]; if (addonData) { const isFlatFee = addonData.isFlatFee || false, pricing = calculatePrice(addonData.perRoom, addonData.minimum, addonData.minRooms, rooms, currency, true, false, country, false, isFlatFee); totalMonthly += pricing.numericTotal; selectedItemsText.push(addonData.name); } });
+            selectedItems.setup.forEach(key => { const setupData = setupCosts[key]; if (setupData) { const isFlatFee = setupData.isFlatFee || false, pricing = calculatePrice(setupData.perRoom, setupData.minimum, setupData.minRooms, rooms, currency, true, false, country, false, isFlatFee); totalSetup += pricing.numericTotal; selectedItemsText.push(setupData.name + ' (Setup)'); } });
+            const symbol = currencySymbols[currency] || "$";
+            const fmt = (v) => v.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+            document.getElementById('totalMonthly').textContent = totalMonthly > 0 ? `${symbol}${fmt(totalMonthly)}/mo` : '$0/mo';
+            document.getElementById('totalSetup').textContent = `Setup: ${symbol}${fmt(totalSetup)}`;
+            document.getElementById('selectedItemsList').innerHTML = selectedItemsText.length > 0 ? selectedItemsText.map(item => `<span class="selected-item">${item}</span>`).join('') : 'No items selected';
+        }
+
+        document.getElementById('country').addEventListener('change', function() { const country = this.value; if (country && countryCurrency[country]) document.getElementById('currency').value = countryCurrency[country]; updateDisplay(); });
+        document.getElementById('currency').addEventListener('change', updateDisplay);
+        document.getElementById('rooms').addEventListener('input', updateDisplay);
+        document.getElementById('includeDistribution').addEventListener('change', updateDisplay);
+
+        updateDisplay();
+    </script>
+</body>
+</html>
